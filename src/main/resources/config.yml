@@ -1,6 +1,10 @@
 #Developed by: _ItsAndrew_
 #This file is for configuring the main parts of the plugin
 
+#Echoes Of Gold PAPI Placeholders:
+#     %eog_balance% -> Display the player's balance
+#     %eog_end_date% -> Display the end date of the tournament.
+
 chat-prefix: "&f&l[&6&lEOG&f&l]" #This is the prefix that shows up in the chat
 
 toggle-fireworks-effect: true #Toggle the fireworks effect when a player clicks on a treasure
@@ -311,6 +315,10 @@ treasure-found-particle:
 
 #This is the duration of the whole event.
 event-duration: "1m" #d -> days; h -> hours; m -> minutes; s -> seconds
+
+#This is the pattern for displaying the End Date of the tournament.
+#d -> day ; M -> Month (Letter) ; y -> year ; H -> hour ; m -> minute ; s -> second
+end-date-placeholder-format: "dd MMM yyyy HH:mm:ss"
 
 #BOSS BAR
 boss-bar: true #true(yes)/false(no)

@@ -239,30 +239,39 @@ public class ShopGUI implements Listener {
         if(itemId == null) return;
 
         double itemPrice = plugin.getConfig().getDouble("economy.shop-gui.items."+itemId+".price", 0);
-        if(!plugin.getEconomyProvider().hasEnough(player, itemPrice)){
-            player.closeInventory();
 
-            String chatMessage = plugin.getConfig().getString("economy.shop-gui.not-enough-money-message", "&cYou don't have enough money to buy this!");
-            chatMessage = plugin.ParsePP(player, chatMessage);
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', chatMessage));
-            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 1f);
-        }
-        else {
-            //Checking if the player has enough inventory space
-            Inventory playerInv = player.getInventory();
-            if (playerInv.firstEmpty() == -1) {
-                player.closeInventory();
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            boolean playerHasEnough = plugin.getEconomyProvider().hasEnough(player, itemPrice);
 
-                String chatMessage = plugin.getConfig().getString("economy.shop-gui.no-inventory-space-message", "&cYou don't have enough space in your inventory to buy this!");
-                chatMessage = plugin.ParsePP(player, chatMessage);
-                player.sendMessage(ChatColor.translateAlternateColorCodes('&', chatMessage));
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 1f);
-                return;
+            if(playerHasEnough){
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    player.closeInventory();
+
+                    String chatMessage = plugin.getConfig().getString("economy.shop-gui.not-enough-money-message", "&cYou don't have enough money to buy this!");
+                    chatMessage = plugin.ParsePP(player, chatMessage);
+                    player.sendMessage(ChatColor.translateAlternateColorCodes('&', chatMessage));
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 1f);
+                });
             }
+            else {
+                Bukkit.getScheduler().runTask(plugin, () -> {
+                    //Checking if the player has enough inventory space
+                    Inventory playerInv = player.getInventory();
+                    if (playerInv.firstEmpty() == -1) {
+                        player.closeInventory();
 
-            switchStances.add(player.getUniqueId());
-            plugin.getShopGuiFinalChoice().showGui(player, itemId);
-        }
+                        String chatMessage = plugin.getConfig().getString("economy.shop-gui.no-inventory-space-message", "&cYou don't have enough space in your inventory to buy this!");
+                        chatMessage = plugin.ParsePP(player, chatMessage);
+                        player.sendMessage(ChatColor.translateAlternateColorCodes('&', chatMessage));
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 1f);
+                        return;
+                    }
+
+                    switchStances.add(player.getUniqueId());
+                    plugin.getShopGuiFinalChoice().showGui(player, itemId);
+                });
+            }
+        });
     }
 
     private void handleRemoveItemClick(Player player, ItemMeta clickedItemMeta){

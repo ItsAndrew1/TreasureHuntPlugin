@@ -16,8 +16,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 public class CommandManager implements CommandExecutor{
     private final EchoesOfGold plugin;
@@ -119,8 +121,16 @@ public class CommandManager implements CommandExecutor{
                             return true;
                         }
 
-                        //Setting up the accounts
-                        plugin.getEconomyProvider().setupAccounts();
+                        //Setting up the economy accounts
+                        List<UUID> playerUUIDs = new ArrayList<>();
+                        for(Player p : Bukkit.getOnlinePlayers()) playerUUIDs.add(p.getUniqueId());
+                        if(!playerUUIDs.isEmpty()){
+                            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                                for(UUID uuid : playerUUIDs){
+                                    plugin.getEconomyProvider().setupAccount(uuid);
+                                }
+                            });
+                        }
                     }
 
                     //Checking if the number of treasures is equal with the value set for 'nr-of-treasures'
@@ -227,9 +237,9 @@ public class CommandManager implements CommandExecutor{
 
                     //Removing any money the players gained. Of course, if the Economy Provider isn't null.
                     if(plugin.getEconomyProvider() != null){
-                        for(Player p : Bukkit.getOnlinePlayers()){
-                            double ammount = plugin.getPlayerData().getConfig().getDouble("players."+p.getUniqueId()+".coins-gathered");
-                            plugin.getDbManager().withdrawFromPlayer(p.getUniqueId().toString(), ammount);
+                        for(OfflinePlayer p : Bukkit.getOfflinePlayers()){
+                            double amount = plugin.getPlayerData().getConfig().getDouble("players."+p.getUniqueId()+".coins-gathered");
+                            plugin.getPlaceholdersManager().RemoveFromEogBalance(p.getUniqueId(), amount);
                         }
                     }
 

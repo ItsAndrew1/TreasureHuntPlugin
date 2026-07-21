@@ -74,7 +74,6 @@ public class DatabaseManager {
             return statement.executeQuery().next();
         } catch (SQLException e){
             plugin.getLogger().warning("[E.O.G] There was an error checking if the player is in the database!");
-            e.printStackTrace();
             return false;
         }
     }
@@ -88,7 +87,6 @@ public class DatabaseManager {
             }
         } catch (SQLException e){
             plugin.getLogger().warning("[E.O.G] There was an error getting the player balance!");
-            e.printStackTrace();
         }
 
         return 0;
@@ -105,7 +103,7 @@ public class DatabaseManager {
                  if(rs.next()) playerBalance = rs.getDouble("balance");
              }
         } catch (SQLException e){
-            e.printStackTrace();
+            plugin.getLogger().warning("[E.O.G] There was an error inserting the player balance!");
         }
 
         //Updating the values with the amount
@@ -118,7 +116,7 @@ public class DatabaseManager {
             ps.setString(2, uuid);
             ps.executeUpdate();
         } catch (SQLException e){
-            e.printStackTrace();
+            plugin.getLogger().warning("[E.O.G] There was an error inserting the player balance!");
         }
     }
 
@@ -130,7 +128,6 @@ public class DatabaseManager {
             statement.executeUpdate();
         } catch (SQLException e){
             plugin.getLogger().warning("[E.O.G] There was an error withdrawing from the player!");
-            e.printStackTrace();
         }
     }
 

@@ -175,13 +175,13 @@ public class TreasureClickEvent implements Listener{
         if(isEconomyWorking()){
             double treasureAmount = treasures.getDouble("treasures."+treasureID+".coins");
 
-            //Deposit the amount to the player's account
-            plugin.getEconomyProvider().addBalance(treasureAmount, player);
-
             //Adding the amount to 'coins-gathered' in the player's data
             double newAmount = data.getDouble(playerPath+".coins-gathered", 0) + treasureAmount;
             data.set(playerPath+".coins-gathered", newAmount);
             plugin.getPlayerData().saveConfig();
+
+            //Saving the balance to the placeholder
+            plugin.getEconomyProvider().setBalancePP(player);
 
             //Displaying a pop-up message above the player's xp bar (action bar)
             String actionBarMessage = plugin.getConfig().getString("economy.action-bar-message");

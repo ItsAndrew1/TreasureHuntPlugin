@@ -30,7 +30,7 @@ public final class EchoesOfGold extends JavaPlugin implements Listener{
     private YMLfiles playerdata;
     private EventScoreboard scoreboardManager;
     private EventProgress eventProgressManager;
-    private int savedDuration = getConfig().getInt("saving-duration");
+    private int savedDuration;
     private final Map<UUID, Consumer<String>> chatInput = new HashMap<>();
     private TreasureManager treasureManager;
     private EventBossBar bossBar;
@@ -45,6 +45,7 @@ public final class EchoesOfGold extends JavaPlugin implements Listener{
     private ShopGUI shopGUI;
     private ShopGuiFinalChoice shopGuiFinalChoice;
     private DatabaseManager dbManager;
+    private PlaceholdersManager placeholderManager;
 
     //Defining the GUIs
     private MainManageGUI manageGUI;
@@ -68,6 +69,7 @@ public final class EchoesOfGold extends JavaPlugin implements Listener{
         eventProgressManager = new EventProgress(this);
         dbManager = new DatabaseManager(this);
         ShopItem shopItem = new ShopItem(this);
+        placeholderManager = new PlaceholdersManager();
 
         //Defining the GUIs
         manageTreasuresGUI = new ManageTreasuresGUI(this);
@@ -107,6 +109,7 @@ public final class EchoesOfGold extends JavaPlugin implements Listener{
         getServer().getPluginManager().registerEvents(shopItem, this);
 
         //Regaining data after a reload
+        savedDuration = getConfig().getInt("saved-duration");
         if(savedDuration > 0){
             eventDuration = savedDuration;
             getEventProgressManager().startEvent(formatTime(eventDuration));
@@ -153,19 +156,19 @@ public final class EchoesOfGold extends JavaPlugin implements Listener{
         boolean toggleEconomy = getConfig().getBoolean("economy.toggle-using-economy", false);
         if(toggleEconomy){
             if(!toggleInternalEconomy && setupVault()){
-                economyProvider = new VaultEconomyProvider(vaultInstance);
+                economyProvider = new VaultEconomyProvider(vaultInstance, this);
                 getLogger().info("[E.O.G] Enabled using Vault economy!");
             }
             else{
                 //Setting up the PlayerBalance custom placeholder
                 if(getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
-                    new PlayerBalancePP(this).register();
+                    new EogPlaceholders(this).register();
                     getLogger().info("[E.O.G] Enabled the placeholder for player balance!");
                 }
 
                 try {
                     dbManager.connectDB();
-                    economyProvider = new InternalEconomyProvider(dbManager);
+                    economyProvider = new InternalEconomyProvider(dbManager, this);
                     getLogger().info("Enabled using internal economy!");
                 } catch (SQLException e) {
                     getLogger().warning("[E.O.G] There was an error connecting to the database! "+e.getMessage());
@@ -318,5 +321,8 @@ public final class EchoesOfGold extends JavaPlugin implements Listener{
     }
     public DatabaseManager getDbManager(){
         return dbManager;
+    }
+    public PlaceholdersManager getPlaceholdersManager(){
+        return placeholderManager;
     }
 }

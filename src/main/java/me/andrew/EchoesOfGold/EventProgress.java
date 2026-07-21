@@ -17,6 +17,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,9 +44,12 @@ public class EventProgress implements Listener {
     public void startEvent(String durationString){
         duration = parseDuration(durationString);
 
-        String fullDurationString = plugin.getConfig().getString("event-duration");
+        String fullDurationString = plugin.getConfig().getString("event-duration", "1m");
         fullDuration = parseDuration(fullDurationString);
         plugin.setEventDuration(duration);
+
+        //Setting the tournament End Date Placeholder
+        plugin.getPlaceholdersManager().setEogEndDate(formatDate(System.currentTimeMillis() + fullDuration * 1000));
 
         countDownValue = plugin.getConfig().getInt("event-final-time.final-countdown.seconds-to-start");
         eventProgress();
@@ -129,10 +136,6 @@ public class EventProgress implements Listener {
                     plugin.getTreasureManager().cancelParticles();
                     plugin.getTreasureManager().removeTreasures();
 
-                    //Removing the player data
-                    plugin.getPlayerData().getConfig().set("players", null);
-                    plugin.getPlayerData().saveConfig();
-
                     //Removing the hints item and giving the player's saved item
                     removeHintsItem();
 
@@ -148,8 +151,21 @@ public class EventProgress implements Listener {
                         plugin.getScoreboardManager().stopScoreboard(p);
                     }
 
+                    //Removing the End Date placeholder
+                    plugin.getPlaceholdersManager().setEogEndDate(" ");
+
+                    //Saving the gathered coins in the database
+                    for(OfflinePlayer p : Bukkit.getOfflinePlayers()){
+                        double coinsGathered = plugin.getPlayerData().getConfig().getDouble("players." + p.getUniqueId() + ".coins-gathered");
+                        plugin.getEconomyProvider().addBalance(coinsGathered, p);
+                    }
+
                     //Clearing the item map
                     savedPlayerItems.clear();
+
+                    //Removing the player data
+                    plugin.getPlayerData().getConfig().set("players", null);
+                    plugin.getPlayerData().saveConfig();
 
                     task.cancel();
                     plugin.setEventActive(false);
@@ -350,6 +366,17 @@ public class EventProgress implements Listener {
         return seconds;
     }
 
+    private String formatDate(long millis){
+        Instant instant = Instant.ofEpochMilli(millis);
+        LocalDateTime date = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+
+        //Setting the pattern
+        String pattern = plugin.getConfig().getString("end-date-placeholder-format", "dd MMM yyyy HH:mm:ss");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+
+        return date.format(formatter);
+    }
+
     @EventHandler
     public void onDropEvent(PlayerDropItemEvent e){
         FileConfiguration mainConfig = plugin.getConfig();
@@ -420,6 +447,7 @@ public class EventProgress implements Listener {
     public void playerJoin(PlayerJoinEvent event) {
         if (!plugin.isEventActive()) return; //This event runs only when the event is active.
         Player targetPlayer = event.getPlayer();
+        UUID targetPlayerUUID = targetPlayer.getUniqueId();
 
         //Check if the boss bar and scoreboard are toggled
         boolean toggleBossBar = plugin.getConfig().getBoolean("boss-bar", true);
@@ -436,12 +464,12 @@ public class EventProgress implements Listener {
         FileConfiguration treasuresConfig = plugin.getTreasures().getConfig();
 
         //Initializing the player in 'playerData.yml' if he wasn't already
-        if (!players.contains(targetPlayer.getName())) {
+        if (players != null && !players.contains(targetPlayer.getUniqueId().toString())) {
             String path = "players." + targetPlayer.getUniqueId();
             data.set(path + ".treasures-found", 0);
 
             //Setting up the economy for the player (if it is toggled)
-            if(plugin.getEconomyProvider() != null) plugin.getEconomyProvider().setupAccounts();
+            if(plugin.getEconomyProvider() != null) Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> plugin.getEconomyProvider().setupAccount(targetPlayerUUID));
 
             if (treasuresConfig.isConfigurationSection("treasures")) {
                 for (String key : treasuresConfig.getConfigurationSection("treasures").getKeys(false)) {

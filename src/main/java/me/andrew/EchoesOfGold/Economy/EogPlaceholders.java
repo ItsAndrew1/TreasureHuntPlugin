@@ -5,10 +5,10 @@ import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 
-public class PlayerBalancePP extends PlaceholderExpansion {
+public class EogPlaceholders extends PlaceholderExpansion {
     private final EchoesOfGold plugin;
 
-    public PlayerBalancePP(EchoesOfGold plugin) {
+    public EogPlaceholders(EchoesOfGold plugin) {
         this.plugin = plugin;
     }
 
@@ -37,12 +37,15 @@ public class PlayerBalancePP extends PlaceholderExpansion {
 
     @Override
     public String onRequest(OfflinePlayer player, @NotNull String params){
+        if(params.equals("end_date")) return plugin.getPlaceholdersManager().getEogEndDate();
+
         //If the internal economy isn't toggled, returns null
         boolean toggleInternalEconomy = plugin.getConfig().getBoolean("economy.internal-economy.toggle", true);
         boolean toggleEconomy = plugin.getConfig().getBoolean("economy.toggle-using-economy", true);
         if(!toggleInternalEconomy || !toggleEconomy) return null;
 
-        if(params.equals("balance")) return String.format("%.2f", plugin.getEconomyProvider().getBalance(player));
+        if(params.equals("balance")) return String.format("%.2f", plugin.getPlaceholdersManager().getEogBalance(player.getUniqueId()));
+
         return null;
     }
 }
