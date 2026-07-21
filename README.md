@@ -2,7 +2,7 @@
 <img width="1080" height="720" alt="BannerTreasureHuntFinal" src="https://github.com/user-attachments/assets/23e69c68-bf3c-49d1-83fc-d85b72820651" />
 
 <p align = "center">
-  <img src="https://img.shields.io/badge/Plugin%20Version-1.3.3-blue?style=for-the-badge"> <img src="https://img.shields.io/badge/Minecraft%20Version-1.18%2B-green?style=for-the-badge"><br>
+  <img src="https://img.shields.io/badge/Plugin%20Version-1.3.4-blue?style=for-the-badge"> <img src="https://img.shields.io/badge/Minecraft%20Version-1.18%2B-green?style=for-the-badge"><br>
   <a href = "https://modrinth.com/plugin/echoes-of-gold"><img src = "https://img.shields.io/modrinth/dt/Sc8tOoum?style=for-the-badge&label=Modrinth%20Downloads&color=dark%20green"></a> <a href = "https://www.spigotmc.org/resources/echoes-of-gold-a-treasure-hunt-plugin-1-20-1-21-11-minor-bug-fixes.130639/"><img src = "https://img.shields.io/spiget/downloads/130639?style=for-the-badge&label=Spigot%20Downloads&color=yellow"></a>
 </p>
 
